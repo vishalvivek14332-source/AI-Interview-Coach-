@@ -1,4 +1,4 @@
-# 🎯 AI Interview Coach
+# 🎯 AI Interview Coach Version 1.0
 
 An AI-powered interview preparation platform built with **Flask**, **SQLite**. Practice technical, HR, and behavioral interviews with adaptive AI-generated questions, voice interaction, detailed feedback, and performance analytics.
 
