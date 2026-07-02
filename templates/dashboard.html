@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · AI Interview Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    /* ── Dashboard extras ── */
+    .dash-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .dash-stat {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem;
+    }
+    .dash-stat .icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+    .dash-stat .val  { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+    .dash-stat .lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    /* Sparkline-style progress */
+    .dash-stat .trend {
+      font-size: 0.73rem; margin-top: 6px;
+    }
+    .trend.up   { color: var(--success); }
+    .trend.down { color: var(--danger); }
+
+    /* ── Filters row ── */
+    .filters-row {
+      display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 0.45rem 1rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 100px; font-size: 0.8rem; color: var(--muted);
+      transition: all 0.2s;
+    }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .filter-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Table improvements ── */
+    .interview-table .table-header { background: var(--bg2); }
+    .table-row .name-cell { font-weight: 600; }
+    .table-row .role-cell { font-size: 0.82rem; color: var(--muted); }
+    .table-row .score-cell {
+      font-family: var(--mono); font-weight: 700; font-size: 0.9rem;
+    }
+    .score-indicator {
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .score-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ── Chart area ── */
+    .chart-section {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.6rem;
+    }
+    .chart-card h3 {
+      font-size: 0.85rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.2rem;
+    }
+
+    /* ── Delete confirm ── */
+    .del-modal {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; display: none;
+    }
+    .del-modal.active { display: flex; }
+    .del-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 2rem; max-width: 400px; width: 100%;
+      text-align: center;
+    }
+    .del-box h3 { margin-bottom: 0.5rem; }
+    .del-box p  { color: var(--muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .del-box .btns { display: flex; gap: 0.75rem; justify-content: center; }
+
+    /* ── Loading ── */
+    .table-loading {
+      text-align: center; padding: 3rem;
+    }
+    .table-loading .spin {
+      display: inline-block; width: 32px; height: 32px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      margin-bottom: 0.8rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.2rem; border-top: 1px solid var(--border);
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .page-btns { display: flex; gap: 0.4rem; }
+    .page-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg2); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; transition: all 0.15s;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    @media (max-width: 900px) {
+      .dash-stats { grid-template-columns: repeat(2, 1fr); }
+      .chart-section { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .dash-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="dot"></div>
+    AI Interview Coach
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="location.href='/'">← Home</button>
+    <button class="nav-btn primary" onclick="location.href='/'">🎯 New Interview</button>
+    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<!-- ── DASHBOARD ─────────────────────────────────────────────────── -->
+<div class="dashboard-container">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <h1>📊 Interview Dashboard</h1>
+    <p>Track your progress across all interview sessions</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="dash-stats">
+    <div class="dash-stat">
+      <div class="icon">🎯</div>
+      <div class="val" id="statTotal">—</div>
+      <div class="lbl">Total Interviews</div>
+      <div class="trend up" id="statTotalTrend"></div>
+    </div>
+    <div class="dash-stat">
+      <div class="icon">✅</div>
+      <div class="val" id="statCompleted">—</div>
+      <div class="lbl">Completed</div>
+    </div>
+    <div class="dash-stat">
+      <div class="icon">⭐</div>
+      <div class="val" id="statAvgScore">—</div>
+      <div class="lbl">Average Score</div>
+      <div class="trend" id="scoreTrend"></div>
+    </div>
+    <div class="dash-stat">
+      <div class="icon">🏆</div>
+      <div class="val" id="statBest">—</div>
+      <div class="lbl">Best Score</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-section" id="chartSection" style="display:none">
+    <div class="chart-card">
+      <h3>Score Trend Over Time</h3>
+      <canvas id="trendChart" height="160"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Scores by Dimension</h3>
+      <canvas id="dimChart" height="160"></canvas>
+    </div>
+  </div>
+
+  <!-- Filters + Search -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
+    <div class="filters-row" style="margin-bottom:0">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('completed', this)">Completed</button>
+      <button class="filter-btn" onclick="setFilter('in_progress', this)">In Progress</button>
+    </div>
+    <div class="search-row" style="margin-bottom:0;width:auto">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by name or email…" oninput="handleSearch()" style="min-width:260px" />
+      <button class="btn-primary" style="padding:0.65rem 1.2rem;font-size:0.875rem" onclick="handleSearch()">Search</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="interview-table">
+    <div class="table-header">
+      <div>Candidate</div>
+      <div>Role</div>
+      <div>Score</div>
+      <div>Status</div>
+      <div>Date</div>
+      <div>Actions</div>
+    </div>
+    <div id="tableBody">
+      <div class="table-loading">
+        <div class="spin"></div>
+        <p style="color:var(--muted)">Loading interviews…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination" style="display:none">
+    <span id="pageInfo">Showing 1–10 of 0</span>
+    <div class="page-btns" id="pageBtns"></div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM ─────────────────────────────────────────── -->
+<div class="del-modal" id="delModal">
+  <div class="del-box">
+    <div style="font-size:2.5rem;margin-bottom:0.8rem">🗑️</div>
+    <h3>Delete Interview?</h3>
+    <p>This will permanently remove this interview and all associated data. This action cannot be undone.</p>
+    <div class="btns">
+      <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-primary" style="background:var(--danger);border-color:var(--danger)" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Theme ────────────────────────────────────────────────────────
+(function() {
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '🌙' : '☀️';
+})();
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const nxt = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nxt);
+  localStorage.setItem('theme', nxt);
+  document.getElementById('themeToggle').textContent = nxt === 'dark' ? '🌙' : '☀️';
+}
+
+// ── State ────────────────────────────────────────────────────────
+let allInterviews = [];
+let filtered      = [];
+let currentFilter = 'all';
+let currentPage   = 1;
+const PAGE_SIZE   = 10;
+let deleteTarget  = null;
+let trendChart    = null;
+let dimChart      = null;
+
+// ── Load data ────────────────────────────────────────────────────
+async function loadInterviews(query = '') {
+  try {
+    const url = `/api/interviews${query ? '?search=' + encodeURIComponent(query) : ''}`;
+    const res  = await fetch(url);
+    allInterviews = await res.json();
+    applyFilter(currentFilter);
+    renderStats();
+    renderCharts();
+  } catch (e) {
+    document.getElementById('tableBody').innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load interviews.</p></div>`;
+  }
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+function renderStats() {
+  const completed = allInterviews.filter(i => i.status === 'completed');
+  const scores    = completed.map(i => i.overall_score || 0);
+  const avg       = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+  const best      = scores.length ? Math.max(...scores) : 0;
+
+  document.getElementById('statTotal').textContent     = allInterviews.length;
+  document.getElementById('statCompleted').textContent = completed.length;
+  document.getElementById('statAvgScore').textContent  = avg ? avg.toFixed(1) : '—';
+  document.getElementById('statBest').textContent      = best ? best.toFixed(1) : '—';
+
+  const tr = document.getElementById('scoreTrend');
+  if (scores.length >= 2) {
+    const last2 = scores.slice(-2);
+    const diff  = last2[1] - last2[0];
+    tr.textContent = diff >= 0 ? `↑ +${diff.toFixed(1)} vs last` : `↓ ${diff.toFixed(1)} vs last`;
+    tr.className   = `trend ${diff >= 0 ? 'up' : 'down'}`;
+  }
+}
+
+// ── Charts ────────────────────────────────────────────────────────
+function renderCharts() {
+  const completed = allInterviews.filter(i => i.status === 'completed').slice(-8);
+  if (!completed.length) return;
+  document.getElementById('chartSection').style.display = 'grid';
+
+  // Trend chart
+  const labels  = completed.map(i => {
+    const d = new Date(i.started_at);
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  const overall = completed.map(i => i.overall_score || 0);
+
+  if (trendChart) trendChart.destroy();
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const gridCol = isDark ? 'rgba(100,116,139,0.15)' : 'rgba(100,116,139,0.2)';
+  const tickCol = isDark ? '#64748b' : '#94a3b8';
+
+  trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Overall Score',
+        data: overall,
+        borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)',
+        borderWidth: 2.5, pointBackgroundColor: '#6366f1', pointRadius: 4,
+        tension: 0.4, fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { grid: { color: gridCol }, ticks: { color: tickCol, font: { size: 10 } } },
+        y: { min: 0, max: 10, grid: { color: gridCol }, ticks: { color: tickCol, stepSize: 2, font: { size: 10 } } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Dimension chart
+  const avg = key => {
+    const vals = completed.filter(i => i[key]).map(i => i[key]);
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  };
+
+  if (dimChart) dimChart.destroy();
+  dimChart = new Chart(document.getElementById('dimChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Technical', 'Communication', 'Confidence'],
+      datasets: [{
+        data: [avg('technical_score'), avg('communication_score'), avg('confidence_score')],
+        backgroundColor: ['rgba(99,102,241,0.7)', 'rgba(16,185,129,0.7)', 'rgba(245,158,11,0.7)'],
+        borderColor:     ['#6366f1', '#10b981', '#f59e0b'],
+        borderWidth: 1.5, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { grid: { display: false }, ticks: { color: tickCol, font: { size: 10 } } },
+        y: { min: 0, max: 10, grid: { color: gridCol }, ticks: { color: tickCol, stepSize: 2, font: { size: 10 } } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// ── Filter ────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  currentFilter = f;
+  currentPage   = 1;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  applyFilter(f);
+}
+function applyFilter(f) {
+  filtered = f === 'all'
+    ? allInterviews
+    : allInterviews.filter(i => i.status === f);
+  renderTable();
+}
+
+// ── Search ────────────────────────────────────────────────────────
+let searchTimer = null;
+function handleSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = document.getElementById('searchInput').value.trim();
+    loadInterviews(q);
+  }, 350);
+}
+
+// ── Table ─────────────────────────────────────────────────────────
+function renderTable() {
+  const total = filtered.length;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page  = filtered.slice(start, start + PAGE_SIZE);
+
+  if (!total) {
+    document.getElementById('tableBody').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🎯</div>
+        <p>No interviews found.</p>
+        <button class="btn-primary" style="margin-top:1rem" onclick="location.href='/'">Start Your First Interview</button>
+      </div>`;
+    document.getElementById('pagination').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('tableBody').innerHTML = page.map(iv => {
+    const score    = (iv.overall_score || 0).toFixed(1);
+    const scoreNum = iv.overall_score || 0;
+    const dotColor = scoreNum >= 7 ? 'var(--success)' : scoreNum >= 5 ? 'var(--warning)' : 'var(--danger)';
+    const date     = iv.started_at
+      ? new Date(iv.started_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+      : '—';
+    const isCompleted = iv.status === 'completed';
+
+    return `
+    <div class="table-row fade-in">
+      <div class="name-cell">${escHtml(iv.name)}</div>
+      <div>
+        <div class="role-cell">${escHtml(iv.job_role)}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:1px">${escHtml(iv.experience_level)}</div>
+      </div>
+      <div class="score-cell">
+        ${isCompleted
+          ? `<span class="score-indicator">
+               <span class="score-dot" style="background:${dotColor}"></span>
+               ${score}
+             </span>`
+          : '<span style="color:var(--muted);font-size:0.8rem">—</span>'
+        }
+      </div>
+      <div><span class="status-pill ${iv.status}">${iv.status === 'completed' ? 'Completed' : 'In Progress'}</span></div>
+      <div style="font-size:0.8rem;color:var(--muted)">${date}</div>
+      <div class="row-actions">
+        ${isCompleted ? `<button class="icon-btn" onclick="location.href='/report/${iv.id}'" title="View Report">📄</button>` : ''}
+        ${isCompleted ? `<button class="icon-btn" onclick="downloadPDF(${iv.id})" title="Download PDF">⬇️</button>` : ''}
+        <button class="icon-btn" onclick="openDeleteModal(${iv.id})" title="Delete" style="color:var(--danger)">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Pagination
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  document.getElementById('pageInfo').textContent = `Showing ${start+1}–${Math.min(start+PAGE_SIZE, total)} of ${total}`;
+  document.getElementById('pagination').style.display = total > PAGE_SIZE ? 'flex' : 'none';
+
+  const pb = document.getElementById('pageBtns');
+  pb.innerHTML = '';
+  for (let p = 1; p <= totalPages; p++) {
+    const btn = document.createElement('button');
+    btn.className = `page-btn${p === currentPage ? ' active' : ''}`;
+    btn.textContent = p;
+    btn.onclick = () => { currentPage = p; renderTable(); };
+    pb.appendChild(btn);
+  }
+}
+
+// ── Delete ────────────────────────────────────────────────────────
+function openDeleteModal(id) { deleteTarget = id; document.getElementById('delModal').classList.add('active'); }
+function closeDeleteModal()   { deleteTarget = null; document.getElementById('delModal').classList.remove('active'); }
+async function confirmDelete() {
+  if (!deleteTarget) return;
+  // Client-side removal (backend delete endpoint not in scope, so remove from local list)
+  allInterviews = allInterviews.filter(i => i.id !== deleteTarget);
+  filtered      = filtered.filter(i => i.id !== deleteTarget);
+  closeDeleteModal();
+  renderTable();
+  renderStats();
+  renderCharts();
+}
+
+// ── PDF download (open report page + print) ───────────────────────
+function downloadPDF(id) {
+  window.open(`/report/${id}`, '_blank');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadInterviews();
+</script>
+</body>
+</html>

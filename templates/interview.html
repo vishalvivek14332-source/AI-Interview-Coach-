@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview · AI Interview Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    /* ── Avatar face SVG animation ── */
+    .av-face { transition: all 0.3s; }
+    .av-mouth { transition: d 0.2s; }
+    .talking .av-mouth-line { animation: mouthTalk 0.35s ease-in-out infinite alternate; }
+    @keyframes mouthTalk {
+      from { d: path("M68 105 Q80 112 92 105"); }
+      to   { d: path("M68 105 Q80 118 92 105"); }
+    }
+    .av-eye { animation: blink 4s infinite; }
+    @keyframes blink {
+      0%,90%,100% { ry: 6; }
+      95% { ry: 1; }
+    }
+    .av-ear-wave {
+      animation: earWave 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes earWave {
+      from { transform: scaleY(0.6); }
+      to   { transform: scaleY(1.1); }
+    }
+
+    /* Question loading dots */
+    .loading-dots span {
+      display: inline-block; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--accent); margin: 0 2px;
+      animation: dotBounce 1.2s infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%,80%,100% { transform: translateY(0); opacity:0.4; }
+      40% { transform: translateY(-8px); opacity:1; }
+    }
+
+    /* TTS wave indicator */
+    .tts-wave {
+      display: none; align-items: center; gap: 3px;
+      height: 20px;
+    }
+    .tts-wave.active { display: flex; }
+    .tts-wave span {
+      width: 3px; background: var(--accent3); border-radius: 2px;
+      animation: wave 0.8s ease-in-out infinite alternate;
+    }
+    .tts-wave span:nth-child(1) { height: 8px; }
+    .tts-wave span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+    .tts-wave span:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+    .tts-wave span:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+    .tts-wave span:nth-child(5) { height: 8px;  animation-delay: 0.4s; }
+    @keyframes wave {
+      from { transform: scaleY(0.5); opacity: 0.6; }
+      to   { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* Finish button glow */
+    .btn-finish {
+      padding: 0.85rem 1.8rem;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      border: none; border-radius: 10px;
+      color: #fff; font-weight: 600; font-size: 0.95rem;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+      transition: all 0.2s; display: none;
+    }
+    .btn-finish:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-finish.visible { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+    /* Completion overlay */
+    .completion-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; display: none;
+    }
+    .completion-overlay.active { display: flex; }
+    .completion-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3rem 2.5rem;
+      max-width: 480px; width: 100%; text-align: center;
+    }
+    .completion-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .completion-card h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .completion-card p { color: var(--muted); margin-bottom: 2rem; }
+    .completion-scores {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .c-score {
+      background: var(--bg2); border-radius: 10px; padding: 1rem;
+    }
+    .c-score .v {
+      font-size: 1.8rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .c-score .l { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .completion-btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+    /* Transcript text bubble animation */
+    @keyframes textAppear {
+      from { opacity: 0; transform: translateX(-6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .text-appear { animation: textAppear 0.3s ease forwards; }
+
+    .interview-layout {
+      padding-top: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="dot"></div>
+    AI Interview Coach
+  </div>
+  <div class="nav-links" style="gap:0.75rem;align-items:center">
+    <div class="timer-row" style="padding:0.4rem 0.9rem">
+      <span style="font-size:0.78rem;color:var(--muted);margin-right:6px">⏱</span>
+      <span class="timer-val" id="globalTimer">00:00</span>
+    </div>
+    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+    <button class="nav-btn" onclick="confirmExit()">✕ Exit</button>
+  </div>
+</nav>
+
+<!-- ── INTERVIEW LAYOUT ──────────────────────────────────────── -->
+<div style="max-width:1200px;margin:76px auto 3rem;padding:0 1.5rem;display:grid;grid-template-columns:1fr 360px;gap:1.4rem" id="mainLayout">
+
+  <!-- LEFT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+    <!-- Avatar Panel -->
+    <div class="avatar-panel">
+      <!-- Progress bar at top -->
+      <div class="progress-wrap" style="margin-bottom:1.2rem">
+        <div class="progress-label">
+          <span>Interview Progress</span>
+          <span id="progressText">Question 0 of 10</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Avatar + speech -->
+      <div style="display:flex;align-items:flex-start;gap:1.4rem">
+        <div class="avatar-wrapper" style="flex-shrink:0">
+          <div class="avatar-ring" id="avatarRing"></div>
+          <!-- Inline SVG avatar -->
+          <svg class="avatar-svg" id="avatarSvg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="skinGrad" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </radialGradient>
+              <radialGradient id="bgGrad" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="#1e1b4b"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </radialGradient>
+            </defs>
+            <!-- Background -->
+            <circle cx="80" cy="80" r="80" fill="url(#bgGrad)"/>
+            <!-- Body/shirt -->
+            <ellipse cx="80" cy="148" rx="44" ry="30" fill="#312e81"/>
+            <rect x="58" y="125" width="44" height="30" rx="4" fill="#4338ca"/>
+            <!-- Collar -->
+            <polygon points="80,122 70,140 80,135 90,140" fill="#e0e7ff"/>
+            <!-- Head -->
+            <ellipse cx="80" cy="80" rx="38" ry="42" fill="url(#skinGrad)"/>
+            <!-- Ear waves (TTS indicator) -->
+            <rect id="earL" class="av-ear-wave" x="36" y="72" width="5" height="16" rx="2" fill="#8b5cf6" transform-origin="38px 80px"/>
+            <rect id="earR" class="av-ear-wave" x="119" y="72" width="5" height="16" rx="2" fill="#8b5cf6" transform-origin="122px 80px" style="animation-delay:0.15s"/>
+            <!-- Eyes -->
+            <ellipse class="av-eye" cx="65" cy="76" rx="7" ry="6" fill="#fff"/>
+            <ellipse class="av-eye" cx="95" cy="76" rx="7" ry="6" fill="#fff" style="animation-delay:0.1s"/>
+            <circle cx="66" cy="77" r="3.5" fill="#1e1b4b"/>
+            <circle cx="96" cy="77" r="3.5" fill="#1e1b4b"/>
+            <circle cx="67" cy="76" r="1.2" fill="#fff"/>
+            <circle cx="97" cy="76" r="1.2" fill="#fff"/>
+            <!-- Eyebrows -->
+            <path d="M57 67 Q65 63 73 67" stroke="#4c1d95" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M87 67 Q95 63 103 67" stroke="#4c1d95" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <!-- Nose -->
+            <ellipse cx="80" cy="90" rx="4" ry="3" fill="rgba(76,29,149,0.3)"/>
+            <!-- Mouth -->
+            <path id="avatarMouth" class="av-mouth-line" d="M68 105 Q80 112 92 105" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <!-- Hair -->
+            <path d="M42 65 Q48 28 80 26 Q112 28 118 65 Q108 48 80 46 Q52 48 42 65Z" fill="#312e81"/>
+            <!-- Glasses -->
+            <rect x="55" y="70" width="24" height="16" rx="6" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <rect x="81" y="70" width="24" height="16" rx="6" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <line x1="79" y1="78" x2="81" y2="78" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--accent)">AI Interviewer</div>
+            <div class="tts-wave" id="ttsWave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="speech-bubble" id="speechBubble">
+            <span id="bubbleText">Getting your interview ready…</span>
+          </div>
+          <div style="margin-top:0.6rem;display:flex;align-items:center;gap:0.6rem">
+            <button onclick="replayTTS()" style="font-size:0.75rem;color:var(--muted);background:none;border:none;padding:0;display:flex;align-items:center;gap:4px">
+              🔊 Replay question
+            </button>
+            <span style="color:var(--border)">·</span>
+            <div id="qTimer" style="font-family:var(--mono);font-size:0.8rem;color:var(--accent3)">00:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question card -->
+    <div class="question-card" id="questionCard" style="display:none">
+      <div class="q-header">
+        <span class="q-badge" id="qTypeBadge">Technical</span>
+        <span style="font-size:0.8rem;color:var(--muted)" id="qNumber">Q1</span>
+      </div>
+      <div class="q-text" id="questionText">Loading question…</div>
+    </div>
+
+    <!-- Answer card -->
+    <div class="answer-card" id="answerCard" style="display:none">
+      <div class="answer-tabs">
+        <button class="tab-btn active" id="tabText" onclick="switchTab('text')">⌨️ Type Answer</button>
+        <button class="tab-btn" id="tabVoice" onclick="switchTab('voice')">🎤 Voice Answer</button>
+      </div>
+
+      <!-- Text area -->
+      <div id="textArea">
+        <textarea id="answerText" placeholder="Type your answer here…"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span style="font-size:0.75rem;color:var(--muted)" id="charCount">0 characters</span>
+          <button onclick="clearAnswer()" style="font-size:0.75rem;color:var(--muted);background:none;border:none;padding:0">Clear</button>
+        </div>
+      </div>
+
+      <!-- Voice area -->
+      <div id="voiceArea" style="display:none">
+        <div class="voice-area">
+          <button class="mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
+          <div class="voice-status" id="voiceStatus">Tap to start recording</div>
+        </div>
+        <textarea id="answerText2" placeholder="Transcribed answer will appear here…" style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:0.9rem;padding:0.85rem;resize:vertical;margin-top:0.5rem"></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-submit" id="submitBtn" onclick="submitAnswer()">Submit Answer →</button>
+        <button class="btn-skip" onclick="skipQuestion()">Skip</button>
+        <button class="btn-finish" id="finishBtn" onclick="finishInterview()">🏁 Finish Interview</button>
+      </div>
+    </div>
+
+    <!-- Feedback card -->
+    <div class="feedback-card" id="feedbackCard">
+      <div class="feedback-title">📊 Answer Evaluation</div>
+      <div class="score-grid" id="scoreGrid"></div>
+      <div class="feedback-section strengths">
+        <h4>✅ Strengths</h4>
+        <ul id="strengthsList"></ul>
+      </div>
+      <div class="feedback-section weaknesses">
+        <h4>❌ Areas to Improve</h4>
+        <ul id="weaknessesList"></ul>
+      </div>
+      <div class="feedback-section suggestions">
+        <h4>💡 Suggestions</h4>
+        <ul id="suggestionsList"></ul>
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn-submit" id="nextBtn" onclick="nextQuestion()" style="max-width:200px">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+    <!-- Session info -->
+    <div class="sidebar-card" id="sessionInfo" style="display:none">
+      <h3>Session</h3>
+      <div style="font-size:0.9rem;margin-bottom:4px" id="sessionName">—</div>
+      <div style="font-size:0.78rem;color:var(--muted)" id="sessionRole">—</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:3px" id="sessionExp">—</div>
+    </div>
+
+    <!-- Hints -->
+    <div class="sidebar-card" id="hintsCard" style="display:none">
+      <h3>💡 Hints</h3>
+      <div class="hints-list" id="hintsList"></div>
+    </div>
+
+    <!-- Question history -->
+    <div class="sidebar-card">
+      <h3>History</h3>
+      <div class="q-history" id="qHistory">
+        <div style="font-size:0.82rem;color:var(--muted);text-align:center;padding:1.5rem 0">
+          No answers yet
+        </div>
+      </div>
+    </div>
+
+    <!-- Running averages -->
+    <div class="sidebar-card" id="avgCard" style="display:none">
+      <h3>Running Avg</h3>
+      <div style="display:flex;flex-direction:column;gap:0.5rem" id="avgScores"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPLETION OVERLAY ─────────────────────────────────────── -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-icon">🏆</div>
+    <h2>Interview Complete!</h2>
+    <p>Great job! Here's how you performed overall.</p>
+    <div class="completion-scores" id="completionScores"></div>
+    <div class="completion-btns">
+      <button class="btn-primary" id="viewReportBtn">📄 View Full Report</button>
+      <button class="btn-secondary" onclick="location.href='/'">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/avatar.js"></script>
+<script src="/static/js/interview.js"></script>
+</body>
+</html>

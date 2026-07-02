@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Report · AI Interview Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    /* ── Radar chart placeholder ── */
+    .radar-wrap {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.8rem; margin-bottom: 1.5rem;
+    }
+    .radar-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.2rem; }
+    canvas#radarChart { max-height: 280px; }
+
+    /* ── Performance band ── */
+    .perf-band {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(6,182,212,0.06));
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.5rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .perf-score-big {
+      font-size: 4rem; font-weight: 800; line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; flex-shrink: 0;
+    }
+    .perf-label { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .perf-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Score bar row ── */
+    .score-bar-row { display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 1.5rem; }
+    .score-bar-item { }
+    .sbi-header { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; }
+    .sbi-label { color: var(--muted); }
+    .sbi-val { font-weight: 700; }
+    .sbi-bar { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+    .sbi-fill { height: 100%; border-radius: 4px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── Section divider ── */
+    .section-divider {
+      display: flex; align-items: center; gap: 0.8rem;
+      margin: 2rem 0 1.2rem;
+    }
+    .section-divider h2 { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Response detail ── */
+    .response-card { animation: fadeIn 0.4s ease forwards; }
+    .r-answer-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+    .r-score-bars { display: flex; flex-direction: column; gap: 6px; margin: 0.8rem 0; }
+    .rsb { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; }
+    .rsb-label { width: 90px; color: var(--muted); flex-shrink: 0; }
+    .rsb-bar { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+    .rsb-fill { height: 100%; border-radius: 3px; }
+    .rsb-val { width: 26px; text-align: right; font-weight: 600; font-size: 0.78rem; }
+
+    /* ── Certificate ── */
+    .cert-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.88);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; display: none;
+    }
+    .cert-overlay.active { display: flex; }
+    .certificate {
+      background: linear-gradient(145deg, #0d1b3e 0%, #1a0d3e 50%, #0d2e1b 100%);
+      border: 2px solid;
+      border-image: linear-gradient(135deg, #6366f1, #06b6d4, #10b981) 1;
+      border-radius: 24px;
+      padding: 3.5rem 3rem;
+      max-width: 640px; width: 100%;
+      text-align: center;
+      box-shadow: 0 0 80px rgba(99,102,241,0.25);
+      position: relative;
+    }
+    .cert-watermark {
+      position: absolute; inset: 0; opacity: 0.04;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7rem; user-select: none; pointer-events: none;
+    }
+    .cert-eyebrow { font-size: 0.78rem; letter-spacing: 0.22em; color: var(--accent3); text-transform: uppercase; margin-bottom: 0.3rem; }
+    .cert-main-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.2rem; }
+    .cert-subtitle { font-size: 0.9rem; color: var(--muted); margin-bottom: 2rem; }
+    .cert-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), var(--accent3), transparent); margin: 1.2rem 0; }
+    .cert-awarded { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .cert-name { font-size: 2rem; font-weight: 800; color: #fff; margin: 0.4rem 0 0.2rem; }
+    .cert-for { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    .cert-role-badge {
+      display: inline-block; padding: 0.4rem 1.2rem;
+      background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.4);
+      border-radius: 100px; font-size: 0.9rem; color: var(--accent); margin-bottom: 1.8rem;
+    }
+    .cert-score-row { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+    .cert-sc { text-align: center; }
+    .cert-sc .v {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .cert-sc .l { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .cert-date { font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem; }
+    .cert-seal {
+      position: absolute; bottom: 1.5rem; right: 2rem;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 0 20px rgba(99,102,241,0.4);
+    }
+    .cert-close {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+      color: white; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .cert-close:hover { background: rgba(255,255,255,0.2); }
+    .cert-btns { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; }
+
+    /* ── Loading state ── */
+    .loading-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 50vh; gap: 1rem;
+    }
+    .loading-state .big-loader {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <!-- Chart.js for radar -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="dot"></div>
+    AI Interview Coach
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="location.href='/'">← Home</button>
+    <button class="nav-btn" onclick="location.href='/dashboard'">Dashboard</button>
+    <button id="themeToggle" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<!-- ── LOADING STATE ─────────────────────────────────────────────── -->
+<div id="loadingState" class="loading-state">
+  <div class="big-loader"></div>
+  <p style="color:var(--muted)">Loading your report…</p>
+</div>
+
+<!-- ── REPORT CONTENT ─────────────────────────────────────────────── -->
+<div class="report-container" id="reportContent" style="display:none">
+
+  <!-- Header -->
+  <div class="report-header" id="reportHeader">
+    <div class="report-avatar" id="reportAvatar"></div>
+    <div class="report-info">
+      <h2 id="candidateName">—</h2>
+      <p id="candidateEmail">—</p>
+      <div class="report-badges" id="reportBadges"></div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:0.75rem;color:var(--muted)">Completed</div>
+      <div style="font-size:0.85rem;font-weight:600;margin-top:2px" id="completedAt">—</div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="report-actions">
+    <button class="btn-primary" onclick="downloadPDF()">⬇️ Download PDF</button>
+    <button class="btn-outline" onclick="showCertificate()">🏆 View Certificate</button>
+    <button class="btn-outline" onclick="location.href='/dashboard'">📊 Dashboard</button>
+    <button class="btn-outline" onclick="location.href='/'">🎯 New Interview</button>
+  </div>
+
+  <!-- Performance Band -->
+  <div class="perf-band" id="perfBand">
+    <div class="perf-score-big" id="bigScore">—</div>
+    <div>
+      <div class="perf-label" id="perfLabel">—</div>
+      <div class="perf-sub" id="perfSub">—</div>
+    </div>
+  </div>
+
+  <!-- Score cards -->
+  <div class="score-cards" id="scoreCards"></div>
+
+  <!-- Score bars + Radar -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem" id="chartsRow">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.6rem">
+      <div class="radar-title">Dimension Scores</div>
+      <div class="score-bar-row" id="scoreBars"></div>
+    </div>
+    <div class="radar-wrap" style="margin-bottom:0">
+      <div class="radar-title">Performance Radar</div>
+      <canvas id="radarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Responses -->
+  <div class="section-divider"><h2>📋 Question-by-Question Breakdown</h2></div>
+  <div class="responses-section" id="responsesSection"></div>
+
+</div>
+
+<!-- ── CERTIFICATE OVERLAY ─────────────────────────────────────── -->
+<div class="cert-overlay" id="certOverlay">
+  <div class="certificate" id="certBox">
+    <div class="cert-watermark">🏆</div>
+    <button class="cert-close" onclick="closeCert()">✕</button>
+
+    <div class="cert-eyebrow">Certificate of Completion</div>
+    <div class="cert-main-title">AI Interview Coach</div>
+    <div class="cert-subtitle">Interview Performance Certificate</div>
+    <div class="cert-divider"></div>
+
+    <div class="cert-awarded">This certifies that</div>
+    <div class="cert-name" id="certName">—</div>
+    <div class="cert-for">successfully completed an AI-powered interview for</div>
+    <div class="cert-role-badge" id="certRole">—</div>
+
+    <div class="cert-score-row">
+      <div class="cert-sc"><div class="v" id="certOverall">—</div><div class="l">Overall</div></div>
+      <div class="cert-sc"><div class="v" id="certTech">—</div><div class="l">Technical</div></div>
+      <div class="cert-sc"><div class="v" id="certComm">—</div><div class="l">Communication</div></div>
+      <div class="cert-sc"><div class="v" id="certConf">—</div><div class="l">Confidence</div></div>
+    </div>
+
+    <div class="cert-divider"></div>
+    <div class="cert-date" id="certDate">—</div>
+    <div class="cert-seal">🤖</div>
+
+    <div class="cert-btns">
+      <button class="btn-primary" onclick="printCert()">🖨️ Print Certificate</button>
+      <button class="btn-secondary" onclick="closeCert()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Theme ────────────────────────────────────────────────────────
+(function() {
+  const t = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '🌙' : '☀️';
+})();
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const nxt = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nxt);
+  localStorage.setItem('theme', nxt);
+  document.getElementById('themeToggle').textContent = nxt === 'dark' ? '🌙' : '☀️';
+}
+
+// ── Load report ──────────────────────────────────────────────────
+const interviewId = window.location.pathname.split('/').pop();
+let reportData = null;
+
+async function loadReport() {
+  try {
+    const res = await fetch(`/api/report/${interviewId}`);
+    const data = await res.json();
+    if (data.error) { showError(data.error); return; }
+    reportData = data;
+    renderReport(data);
+  } catch (e) {
+    showError('Failed to load report.');
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').innerHTML =
+    `<div style="text-align:center;padding:4rem 2rem">
+      <div style="font-size:3rem;margin-bottom:1rem">😞</div>
+      <h2>Report Not Found</h2>
+      <p style="color:var(--muted);margin:0.8rem 0 1.5rem">${msg}</p>
+      <button class="btn-primary" onclick="location.href='/'">← Back to Home</button>
+    </div>`;
+}
+
+function renderReport(data) {
+  const iv = data.interview;
+  const rs = data.responses || [];
+
+  // Header
+  document.getElementById('candidateName').textContent  = iv.name;
+  document.getElementById('candidateEmail').textContent = iv.email;
+  document.getElementById('reportAvatar').textContent   = iv.name.charAt(0).toUpperCase();
+
+  const badges = `
+    <span class="badge">${iv.job_role}</span>
+    <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--success)">${iv.experience_level}</span>
+    <span class="badge" style="background:rgba(6,182,212,0.12);color:var(--accent3)">${iv.total_questions} Questions</span>
+  `;
+  document.getElementById('reportBadges').innerHTML = badges;
+
+  if (iv.completed_at) {
+    const d = new Date(iv.completed_at);
+    document.getElementById('completedAt').textContent = d.toLocaleDateString('en-US', {
+      year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+  }
+
+  // Performance band
+  const overall = iv.overall_score || 0;
+  document.getElementById('bigScore').textContent = overall.toFixed(1);
+  const { label, sub } = getPerfLabel(overall);
+  document.getElementById('perfLabel').textContent = label;
+  document.getElementById('perfSub').textContent   = sub;
+
+  // Score cards
+  document.getElementById('scoreCards').innerHTML = [
+    { label: 'Overall Score',    val: overall,                icon: '⭐' },
+    { label: 'Technical Score',  val: iv.technical_score,     icon: '💻' },
+    { label: 'Communication',    val: iv.communication_score, icon: '🗣️' },
+    { label: 'Confidence Score', val: iv.confidence_score,    icon: '💪' }
+  ].map(s => `
+    <div class="score-card">
+      <div style="font-size:1.4rem;margin-bottom:0.4rem">${s.icon}</div>
+      <div class="big">${(s.val||0).toFixed(1)}</div>
+      <div class="label">${s.label}</div>
+    </div>
+  `).join('');
+
+  // Score bars (dimension averages from responses)
+  const dims = [
+    { key: 'relevance_score',     label: 'Relevance',     color: '#6366f1' },
+    { key: 'technical_score',     label: 'Technical',     color: '#06b6d4' },
+    { key: 'communication_score', label: 'Communication', color: '#10b981' },
+    { key: 'confidence_score',    label: 'Confidence',    color: '#f59e0b' },
+    { key: 'completeness_score',  label: 'Completeness',  color: '#8b5cf6' }
+  ];
+  const dimAvgs = dims.map(d => {
+    const vals = rs.filter(r => r.scores).map(r => r.scores[d.key.replace('_score','')] || 0);
+    return { ...d, avg: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0 };
+  });
+
+  document.getElementById('scoreBars').innerHTML = dimAvgs.map(d => `
+    <div class="score-bar-item">
+      <div class="sbi-header">
+        <span class="sbi-label">${d.label}</span>
+        <span class="sbi-val">${d.avg.toFixed(1)}/10</span>
+      </div>
+      <div class="sbi-bar">
+        <div class="sbi-fill" style="width:0%;background:${d.color}" data-width="${d.avg*10}%"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Radar chart
+  renderRadar(dimAvgs);
+
+  // Response cards
+  document.getElementById('responsesSection').innerHTML = rs.map((r, i) => {
+    const sc = r.scores || {};
+    const avg = ((sc.relevance||0)+(sc.technical||0)+(sc.communication||0)+(sc.confidence||0)+(sc.completeness||0))/5;
+    const avgCls = avg >= 7 ? 'score-high' : avg >= 5 ? 'score-mid' : 'score-low';
+
+    const miniDims = [
+      { l:'Relevance',  v: sc.relevance,     c:'#6366f1' },
+      { l:'Technical',  v: sc.technical,     c:'#06b6d4' },
+      { l:'Comm.',      v: sc.communication, c:'#10b981' },
+      { l:'Confidence', v: sc.confidence,    c:'#f59e0b' },
+      { l:'Complete.',  v: sc.completeness,  c:'#8b5cf6' }
+    ];
+
+    const strengths  = (r.strengths  || []).slice(0,3);
+    const weaknesses = (r.weaknesses || []).slice(0,2);
+    const suggestions= (r.suggestions|| []).slice(0,2);
+
+    return `
+    <div class="response-card">
+      <div class="r-header">
+        <div class="r-num">${r.question_number}</div>
+        <div class="r-q">${r.question_text}</div>
+        <span class="q-badge ${r.question_type}" style="margin-left:auto;flex-shrink:0">${r.question_type}</span>
+        <span class="${avgCls}" style="font-weight:800;font-size:1rem;margin-left:0.5rem;flex-shrink:0">${avg.toFixed(1)}</span>
+      </div>
+
+      <div class="r-answer-label">Candidate's Answer</div>
+      <div class="r-answer">${r.answer_text || '<em style="opacity:0.5">No answer recorded</em>'}</div>
+
+      <div class="r-score-bars">
+        ${miniDims.map(d => `
+          <div class="rsb">
+            <span class="rsb-label">${d.l}</span>
+            <div class="rsb-bar"><div class="rsb-fill" style="width:${(d.v||0)*10}%;background:${d.c}"></div></div>
+            <span class="rsb-val">${(d.v||0).toFixed(1)}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="fb-tags">
+        ${strengths.map(s => `<span class="fb-tag s">✅ ${s}</span>`).join('')}
+        ${weaknesses.map(w => `<span class="fb-tag w">❌ ${w}</span>`).join('')}
+        ${suggestions.map(g => `<span class="fb-tag sg">💡 ${g}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Show content
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('reportContent').style.display = 'block';
+
+  // Animate bars after a tick
+  setTimeout(() => {
+    document.querySelectorAll('.sbi-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  }, 100);
+
+  // Populate certificate
+  populateCertificate(iv);
+}
+
+// ── Radar Chart ───────────────────────────────────────────────────
+function renderRadar(dims) {
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: dims.map(d => d.label),
+      datasets: [{
+        label: 'Score',
+        data: dims.map(d => d.avg),
+        backgroundColor: 'rgba(99,102,241,0.15)',
+        borderColor: '#6366f1',
+        borderWidth: 2,
+        pointBackgroundColor: '#6366f1',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 10, ticks: { stepSize: 2, color: '#64748b', backdropColor: 'transparent' },
+          grid: { color: 'rgba(100,116,139,0.2)' },
+          pointLabels: { color: '#94a3b8', font: { size: 11 } }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+// ── Performance label ─────────────────────────────────────────────
+function getPerfLabel(score) {
+  if (score >= 9)   return { label: '🌟 Outstanding Performance',  sub: 'You are interview-ready and will impress any panel.' };
+  if (score >= 7.5) return { label: '🎯 Excellent Performance',    sub: 'Strong across all dimensions with minor areas to polish.' };
+  if (score >= 6)   return { label: '👍 Good Performance',         sub: 'Solid foundation. Focus on the highlighted weak areas.' };
+  if (score >= 4.5) return { label: '📈 Average Performance',      sub: 'Room to grow. Review the suggestions for each answer.' };
+  return                   { label: '💪 Keep Practising',          sub: 'Don\'t give up! Review the feedback and try again.' };
+}
+
+// ── Certificate ───────────────────────────────────────────────────
+function populateCertificate(iv) {
+  document.getElementById('certName').textContent    = iv.name;
+  document.getElementById('certRole').textContent    = iv.job_role;
+  document.getElementById('certOverall').textContent = (iv.overall_score||0).toFixed(1);
+  document.getElementById('certTech').textContent    = (iv.technical_score||0).toFixed(1);
+  document.getElementById('certComm').textContent    = (iv.communication_score||0).toFixed(1);
+  document.getElementById('certConf').textContent    = (iv.confidence_score||0).toFixed(1);
+  const d = iv.completed_at ? new Date(iv.completed_at) : new Date();
+  document.getElementById('certDate').textContent    = 'Issued on ' + d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+}
+function showCertificate() { document.getElementById('certOverlay').classList.add('active'); }
+function closeCert()        { document.getElementById('certOverlay').classList.remove('active'); }
+function printCert() {
+  const win = window.open('', '_blank');
+  const cert = document.getElementById('certBox').outerHTML;
+  win.document.write(`
+    <html><head><title>Certificate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body { margin:0; background:#000; display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:Inter,sans-serif; }
+      :root { --accent:#6366f1; --accent3:#06b6d4; --muted:#64748b; }
+      .certificate { background:linear-gradient(145deg,#0d1b3e,#1a0d3e,#0d2e1b); border:2px solid #6366f1; border-radius:24px; padding:3.5rem 3rem; max-width:640px; width:100%; text-align:center; position:relative; color:#e2e8f0; }
+      .cert-eyebrow{font-size:.78rem;letter-spacing:.22em;color:var(--accent3);text-transform:uppercase;margin-bottom:.3rem}
+      .cert-main-title{font-size:2.2rem;font-weight:800;margin-bottom:.2rem}
+      .cert-subtitle{font-size:.9rem;color:var(--muted);margin-bottom:2rem}
+      .cert-divider{height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent3),transparent);margin:1.2rem 0}
+      .cert-awarded{font-size:.78rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+      .cert-name{font-size:2rem;font-weight:800;color:#fff;margin:.4rem 0 .2rem}
+      .cert-for{font-size:.85rem;color:var(--muted);margin-bottom:1rem}
+      .cert-role-badge{display:inline-block;padding:.4rem 1.2rem;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);border-radius:100px;font-size:.9rem;color:var(--accent);margin-bottom:1.8rem}
+      .cert-score-row{display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem}
+      .cert-sc .v{font-size:2rem;font-weight:800;color:var(--accent)}
+      .cert-sc .l{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+      .cert-date{font-size:.78rem;color:var(--muted);margin-top:.5rem}
+      .cert-close,.cert-btns,.cert-watermark,.cert-seal{display:none}
+    </style></head><body>${cert}</body></html>
+  `);
+  win.document.close();
+  setTimeout(() => { win.print(); win.close(); }, 500);
+}
+
+// ── PDF Download ──────────────────────────────────────────────────
+async function downloadPDF() {
+  if (!reportData) return;
+  const iv = reportData.interview;
+  const rs = reportData.responses || [];
+
+  // Build HTML for print
+  const printHTML = `
+    <html><head>
+    <title>Interview Report – ${iv.name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Inter,sans-serif;padding:2rem;color:#1e293b;font-size:13px}
+      h1{font-size:1.6rem;font-weight:800;margin-bottom:0.3rem}
+      h2{font-size:1rem;font-weight:700;margin:1.5rem 0 0.6rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.3rem}
+      .meta{font-size:0.8rem;color:#64748b;margin-bottom:1.5rem}
+      .score-row{display:flex;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap}
+      .sc{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.8rem 1.2rem;min-width:120px;text-align:center}
+      .sc .v{font-size:1.6rem;font-weight:800;color:#6366f1}
+      .sc .l{font-size:0.7rem;color:#64748b;margin-top:2px}
+      .qcard{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:0.8rem;page-break-inside:avoid}
+      .qcard .qh{font-weight:700;margin-bottom:0.4rem;font-size:0.9rem}
+      .qcard .qa{font-size:0.83rem;color:#475569;margin:0.4rem 0;padding:0.5rem;background:#fff;border-radius:5px}
+      .qcard .scores{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem}
+      .qcard .sc-small{font-size:0.73rem;padding:2px 8px;background:#ede9fe;color:#6366f1;border-radius:100px}
+      @media print{@page{margin:1.5cm}}
+    </style></head>
+    <body>
+    <h1>Interview Report</h1>
+    <div class="meta">${iv.name} · ${iv.email} · ${iv.job_role} · ${iv.experience_level}</div>
+    <div class="score-row">
+      <div class="sc"><div class="v">${(iv.overall_score||0).toFixed(1)}</div><div class="l">Overall</div></div>
+      <div class="sc"><div class="v">${(iv.technical_score||0).toFixed(1)}</div><div class="l">Technical</div></div>
+      <div class="sc"><div class="v">${(iv.communication_score||0).toFixed(1)}</div><div class="l">Communication</div></div>
+      <div class="sc"><div class="v">${(iv.confidence_score||0).toFixed(1)}</div><div class="l">Confidence</div></div>
+    </div>
+    <h2>Question Responses</h2>
+    ${rs.map(r => {
+      const sc = r.scores || {};
+      const avg = ((sc.relevance||0)+(sc.technical||0)+(sc.communication||0)+(sc.confidence||0)+(sc.completeness||0))/5;
+      return `<div class="qcard">
+        <div class="qh">Q${r.question_number}. [${r.question_type}] ${r.question_text}</div>
+        <div class="qa">${r.answer_text || 'No answer recorded'}</div>
+        <div class="scores">
+          <span class="sc-small">Avg: ${avg.toFixed(1)}</span>
+          <span class="sc-small">Technical: ${(sc.technical||0).toFixed(1)}</span>
+          <span class="sc-small">Comm: ${(sc.communication||0).toFixed(1)}</span>
+          <span class="sc-small">Confidence: ${(sc.confidence||0).toFixed(1)}</span>
+        </div>
+        ${r.strengths?.length ? `<div style="font-size:0.75rem;color:#10b981;margin-top:4px">✅ ${r.strengths.join(' · ')}</div>` : ''}
+        ${r.suggestions?.length ? `<div style="font-size:0.75rem;color:#f59e0b;margin-top:2px">💡 ${r.suggestions.join(' · ')}</div>` : ''}
+      </div>`;
+    }).join('')}
+    </body></html>
+  `;
+
+  const win = window.open('', '_blank');
+  win.document.write(printHTML);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 600);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadReport();
+</script>
+</body>
+</html>
