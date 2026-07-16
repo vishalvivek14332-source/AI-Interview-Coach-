@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About &amp; Features · AI Interview Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    /* Custom documentation styles */
+    .about-hero {
+      padding-top: 120px;
+      padding-bottom: 3rem;
+      text-align: center;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .about-hero::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0) 70%);
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .about-hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1.15rem;
+      line-height: 1.8;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Tabs Navigation */
+    .tabs-container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .tabs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 0.8rem 1.5rem;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(99, 102, 241, 0.05);
+    }
+    .tab-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Inner Features Filters */
+    .filter-container {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .filter-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Timeline Workflow */
+    .workflow-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 750px;
+      margin: 3rem auto;
+      position: relative;
+      padding-left: 2rem;
+      text-align: left;
+    }
+    .workflow-timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+    }
+    .timeline-badge {
+      position: absolute;
+      left: -32px; top: 2px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      z-index: 1;
+    }
+    .timeline-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+    .timeline-content:hover {
+      border-color: var(--accent);
+      transform: translateX(5px);
+    }
+    .timeline-content h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .timeline-content p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* Tech Cards & Files */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+    .tech-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .tech-card:hover {
+      border-color: var(--accent2);
+      transform: translateY(-2px);
+    }
+    .tech-logo {
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px; height: 44px;
+      background: rgba(99,102,241,0.08);
+      border-radius: 10px;
+    }
+    .tech-info h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .tech-info p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .file-tree {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      max-width: 850px;
+      margin: 2rem auto;
+      text-align: left;
+    }
+    .tree-node {
+      margin-left: 1.5rem;
+      position: relative;
+      padding-left: 1.2rem;
+      border-left: 1px dashed var(--border);
+      margin-bottom: 0.8rem;
+    }
+    .tree-node:last-child {
+      border-left: none;
+    }
+    .tree-node::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 12px;
+      width: 12px; height: 1px;
+      border-top: 1px dashed var(--border);
+    }
+    .node-title {
+      font-weight: 700;
+      color: var(--accent3);
+    }
+    .node-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: var(--font);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* Purpose list */
+    .purpose-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    /* CTA spacing override */
+    .cta-band {
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="dot"></div>
+    AI Interview Coach
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="location.href='/'">Home</button>
+    <button class="nav-btn active-nav" onclick="location.href='/about'">About &amp; Features</button>
+    <button class="nav-btn" onclick="location.href='/dashboard'">Dashboard</button>
+    <button class="nav-btn primary" onclick="location.href='/'">Start Interview</button>
+    <button id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────── -->
+<section class="about-hero">
+  <div class="about-hero-content">
+    <div class="hero-badge">
+      <span>✨</span> Unified Documentation
+    </div>
+    <h1 class="hero-title">AI Interview Coach</h1>
+    <p class="hero-sub">
+      A lightweight, privacy-first preparation workspace built to help you master tech, HR, and behavioral interviews. Powered by the Google Gemini API with fully localized data storage.
+    </p>
+  </div>
+</section>
+
+<!-- ── TABS CONTAINER ───────────────────────────────────────────── -->
+<div class="tabs-container">
+  
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('featuresTab', this)">
+      <span>🎯</span> Platform Features
+    </button>
+    <button class="tab-btn" onclick="switchTab('architectureTab', this)">
+      <span>🏗️</span> Architecture &amp; Workflow
+    </button>
+    <button class="tab-btn" onclick="switchTab('techTab', this)">
+      <span>🛠️</span> Tech Stack &amp; File Map
+    </button>
+  </div>
+
+  <!-- ── TAB 1: FEATURES ────────────────────────────────────────── -->
+  <div id="featuresTab" class="tab-content active">
+    
+    <div class="filter-container">
+      <button class="filter-btn active" data-category="all" onclick="filterFeatures('all')">All Features</button>
+      <button class="filter-btn" data-category="experience" onclick="filterFeatures('experience')">Interview Flow</button>
+      <button class="filter-btn" data-category="ai" onclick="filterFeatures('ai')">AI Grading</button>
+      <button class="filter-btn" data-category="documents" onclick="filterFeatures('documents')">PDFs &amp; Reports</button>
+      <button class="filter-btn" data-category="dashboard" onclick="filterFeatures('dashboard')">Dashboard &amp; UX</button>
+    </div>
+
+    <div class="features-grid">
+      <!-- Experience -->
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">🤖</div>
+        <h3>Animated AI Avatar</h3>
+        <p>A custom SVG interviewer face with talking animations, blink loops, and status states that react as the interview proceeds.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">🔊</div>
+        <h3>Text-to-Speech Questions</h3>
+        <p>Every question is spoken aloud using the native Speech Synthesis API, with replay tools to hear questions again.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">🎤</div>
+        <h3>Voice Recognition</h3>
+        <p>Speak your answers naturally. Real-time audio transcription inputs text automatically into the transcript editor.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">⌨️</div>
+        <h3>Text Input Mode</h3>
+        <p>Prefer writing? Toggle to text mode. Both audio transcription and text mode produce identical results for the AI.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">🎯</div>
+        <h3>Adaptive Questioning</h3>
+        <p>Questions change dynamically based on the performance of previous answers, making the session realistic.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">🔄</div>
+        <h3>Question Type Rotation</h3>
+        <p>Balanced 10-question sessions rotating through HR, Behavioral, and Deep Technical questions.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">⏱️</div>
+        <h3>Dual Session Timers</h3>
+        <p>Tracks overall elapsed interview duration alongside question-specific elapsed stopwatch counters.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">💡</div>
+        <h3>Per-Question Hints</h3>
+        <p>Stuck on a question? Toggle 2-3 tailored pointers to structure a comprehensive and technical reply.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="experience">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.12);color:#6366f1;">⏭️</div>
+        <h3>Skip Question</h3>
+        <p>Skip complex questions. Skipped items do not accumulate grading penalties or damage metrics.</p>
+      </div>
+
+      <!-- AI Grading -->
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">📐</div>
+        <h3>Relevance Grading</h3>
+        <p>Evaluates whether the provided response stays on topic and addresses target objectives directly.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">💻</div>
+        <h3>Technical Accuracy</h3>
+        <p>Validates syntax, facts, models, structural descriptions, and core logic against job requirements.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">🗣️</div>
+        <h3>Communication Quality</h3>
+        <p>Checks structure, language choice, clarity, jargon usage, and logical sequencing of points.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">💪</div>
+        <h3>Confidence Assessment</h3>
+        <p>Detects filler vocabulary, hedging phrases, and structural hesitation to calculate certainty ratings.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">✅</div>
+        <h3>Completeness Score</h3>
+        <p>Validates if important corner cases, requirements, or related system constraints were fully addressed.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="ai">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.15);color:#06b6d4;">💬</div>
+        <h3>Instant Score Reports</h3>
+        <p>Delivers detailed scores, identified strengths, weaknesses, and clear improvement tips immediately on submission.</p>
+      </div>
+
+      <!-- PDFs & Documents -->
+      <div class="feat-card feat-card-container" data-category="documents">
+        <div class="feat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">📑</div>
+        <h3>Comprehensive PDF Reports</h3>
+        <p>Generates detailed multi-page reports with metric dashboards, Radar charts, and question feedback breakdowns.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="documents">
+        <div class="feat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">🏆</div>
+        <h3>Downloadable Certificates</h3>
+        <p>Provides official landscape-style certificates featuring gradient borders and verified AI seals.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="documents">
+        <div class="feat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">📧</div>
+        <h3>SMTP Email Dispatch</h3>
+        <p>Instantly send reports, certificates, or both directly to candidates via email after completion.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="documents">
+        <div class="feat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">🧠</div>
+        <h3>AI Narrative Summary</h3>
+        <p>Generates an overall assessment of your performance, including career tips and resource references.</p>
+      </div>
+
+      <!-- Dashboard & UX -->
+      <div class="feat-card feat-card-container" data-category="dashboard">
+        <div class="feat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">📋</div>
+        <h3>Session History Table</h3>
+        <p>Maintains logs of past interviews complete with target role labels, performance levels, and scores.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="dashboard">
+        <div class="feat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">📉</div>
+        <h3>Progress Trend Lines</h3>
+        <p>Visualizes overall score trajectories over your last 8 sessions with dynamic Chart.js plots.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="dashboard">
+        <div class="feat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">🔍</div>
+        <h3>Dynamic Index Search</h3>
+        <p>Instantly filters dashboard history rows by candidate name or target email without page reloading.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="dashboard">
+        <div class="feat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">🌙</div>
+        <h3>Dark &amp; Light Theme</h3>
+        <p>Fully styled dark/light mode matching user preference, saved persistently via localStorage.</p>
+      </div>
+
+      <div class="feat-card feat-card-container" data-category="dashboard">
+        <div class="feat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">🛡️</div>
+        <h3>XSS &amp; Verification Shields</h3>
+        <p>Sanitizes all generated inputs to block template injection and runs form validation before submitting API calls.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: ARCHITECTURE ────────────────────────────────────── -->
+  <div id="architectureTab" class="tab-content">
+    
+    <div class="section-title">Project Purpose</div>
+    <div class="section-sub">Why this platform was engineered</div>
+    
+    <div class="purpose-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(99,102,241,0.1);color:var(--accent);">🎯</div>
+        <h3>Democratize Interview Prep</h3>
+        <p>Simulating live technical interviews is often expensive or unavailable. This tool provides instant, comprehensive practice sessions completely free of charge.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(139,92,246,0.1);color:var(--accent2);">🔒</div>
+        <h3>Private-First Framework</h3>
+        <p>No telemetry, third-party analytics, or tracking platforms. All records, audio transcript summaries, and feedback metrics reside on your own local SQLite database.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(6,182,212,0.1);color:var(--accent3);">📈</div>
+        <h3>Structured Feedback</h3>
+        <p>Uses standardized professional metrics (relevance, accuracy, confidence) to pinpoint specific skills and knowledge areas for improvement.</p>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:4rem;">Core Flow Architecture</div>
+    <div class="section-sub">End-to-End system processing walkthrough</div>
+
+    <div class="workflow-timeline">
+      <div class="timeline-item">
+        <div class="timeline-badge">1</div>
+        <div class="timeline-content">
+          <h3>👤 Candidate Onboarding</h3>
+          <p>The candidate selects a job role and experience level. A session-specific instance is initiated in the local SQLite database.</p>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-badge">2</div>
+        <div class="timeline-content">
+          <h3>🤖 Dynamic Questioning</h3>
+          <p>The system passes session history to Google Gemini to build specialized questions tailored to the candidate's experience level and prior performance.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">3</div>
+        <div class="timeline-content">
+          <h3>🎙️ Speech Transcript Capture</h3>
+          <p>The candidate responds. Real-time audio parsing translates speech via the Web Speech API before transmitting transcripts to the server.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">4</div>
+        <div class="timeline-content">
+          <h3>🧠 Multidimensional Grading</h3>
+          <p>The response is sent to Gemini for grading across five key dimensions. Feedback is immediately displayed to the candidate.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">5</div>
+        <div class="timeline-content">
+          <h3>🏆 Document Compilation</h3>
+          <p>On completion, average scores are compiled. Professional PDF reports and certificates are generated using ReportLab, ready to download or email.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 3: TECH & FILES ────────────────────────────────────── -->
+  <div id="techTab" class="tab-content">
+    
+    <div class="section-title">Technology Stack</div>
+    <div class="section-sub">Frameworks, libraries, and utilities powering the engine</div>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-logo">🐍</div>
+        <div class="tech-info">
+          <h4>Python 3.12+</h4>
+          <p>Platform backbone</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">🌶️</div>
+        <div class="tech-info">
+          <h4>Flask 3.x</h4>
+          <p>Server framework</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">🗄️</div>
+        <div class="tech-info">
+          <h4>SQLite 3</h4>
+          <p>Data persistence</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">✨</div>
+        <div class="tech-info">
+          <h4>Gemini API</h4>
+          <p>AI Engine &amp; Evaluator</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">📄</div>
+        <div class="tech-info">
+          <h4>ReportLab 5</h4>
+          <p>PDF compilation</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">📧</div>
+        <div class="tech-info">
+          <h4>smtplib</h4>
+          <p>SMTP Email dispatch</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">🎤</div>
+        <div class="tech-info">
+          <h4>Web Speech API</h4>
+          <p>Transcription &amp; TTS</p>
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-logo">📊</div>
+        <div class="tech-info">
+          <h4>Chart.js 4</h4>
+          <p>Dashboard plots</p>
+        </div>
+      </div>
+    </div>
+    
+
+  </div>
+
+</div>
+
+<!-- ── CTA BAND ──────────────────────────────────────────────── -->
+<section class="cta-band">
+  <div class="hero-btns" style="justify-content:center;">
+    <button class="btn-primary" onclick="location.href='/'">🚀 Start Interview</button>
+    <button class="btn-secondary" onclick="location.href='/dashboard'">📊 View Dashboard</button>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────────── -->
+<footer>
+  <p>AI Interview Coach · Built with ❤️ using Flask &amp; Google Gemini · <span id="year"></span></p>
+</footer>
+
+<script>
+  // Theme Manager
+  (function() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+  })();
+
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const nxt = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nxt);
+    localStorage.setItem('theme', nxt);
+    document.getElementById('themeToggle').textContent = nxt === 'dark' ? '🌙' : '☀️';
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Tab Manager
+  function switchTab(tabId, btnElement) {
+    // Hide all contents
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(el => el.classList.remove('active'));
+
+    // Deactivate all buttons
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(el => el.classList.remove('active'));
+
+    // Activate selected
+    document.getElementById(tabId).classList.add('active');
+    btnElement.classList.add('active');
+  }
+
+  // Feature Card filtering
+  function filterFeatures(category) {
+    const cards = document.querySelectorAll('.feat-card-container');
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    // Update active filter button
+    buttons.forEach(btn => {
+      if (btn.getAttribute('onclick').includes(`'${category}'`)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Show/hide cards
+    cards.forEach(card => {
+      const cardCategory = card.getAttribute('data-category');
+      if (category === 'all' || cardCategory === category) {
+        card.style.display = 'block';
+        card.style.animation = 'fadeIn 0.4s ease-in-out';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+</body>
+</html>

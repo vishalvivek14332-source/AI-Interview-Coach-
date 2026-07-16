@@ -1,0 +1,29 @@
+# AI Interview Coach — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Web framework
+flask>=3.0.0
+
+# HTTP client for Google Gemini API calls
+requests>=2.28.0
+
+# PDF generation (report + certificate)
+reportlab>=4.0.0
+
+# Image processing (used by ReportLab)
+pillow>=10.0.0
+
+# ── How to set environment variables ──────────────────────────────────────────
+# Required:
+#   export GEMINI_API_KEY=AIzaSy...
+#
+# Optional (email):
+#   export SMTP_HOST=smtp.gmail.com
+#   export SMTP_PORT=587
+#   export SMTP_USERNAME=you@gmail.com
+#   export SMTP_PASSWORD=your-app-password
+#   export EMAIL_FROM=you@gmail.com
+#   export EMAIL_FROM_NAME="AI Interview Coach"
+#
+# Database:
+#   SQLite file is created automatically at database.db (no config needed)
