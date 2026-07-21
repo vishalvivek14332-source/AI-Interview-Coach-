@@ -165,6 +165,21 @@ Other errors are work in progress!
 
 ---
 
+# 📈 Future Enhancements
+
+- Unreal Engine MetaHuman Interviewer
+- Emotion Recognition
+- Eye Tracking
+- Resume Parsing
+- Company-specific Interview Packs
+- Online Multiplayer Mock Interviews
+- ATS Resume Evaluation
+- Video Interview Recording
+- AI Hiring Prediction
+- Cloud Deployment
+
+---
+
 ## 📜 License
 
 This project is intended for educational and learning purposes.
