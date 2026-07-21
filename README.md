@@ -161,6 +161,7 @@ pip install -r requirements.txt
 ### Text-to-Speech not working
 
 Click anywhere on the page before starting the interview to enable browser audio.
+Other errors are work in progress!
 
 ---
 
