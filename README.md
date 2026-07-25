@@ -79,7 +79,6 @@ The interviewer is powered by **Unreal Engine 5.8 MetaHuman** and streamed throu
 
 - Responsive interface
 - Dark / Light mode
-- Mobile friendly
 - Modern dashboard
 - Clean interview interface
 
@@ -307,12 +306,12 @@ The MetaHuman is streamed directly into the interview interface using Streampixe
 | Reports | ✅ |
 | Certificates | ✅ |
 | Interview History | ✅ |
-| Unreal MetaHuman | ✅ |
+| Unreal MetaHuman | 🚧 |
 | Pixel Streaming | ✅ |
 | Streampixel Integration | ✅ |
-| Body Language Analysis | 🚧 |
+| Body Language Analysis | ✅ |
 | Emotion Recognition | 🚧 |
-| Eye Tracking | 🚧 |
+| Eye Tracking | ✅ |
 | Resume Analysis | 🚧 |
 
 ---
@@ -340,15 +339,11 @@ pip install -r requirements.txt
 
 - Runtime MetaHuman speech generation
 - AI-powered facial lip sync
-- Resume parsing
 - Company-specific interview templates
 - AI emotion recognition
 - Eye contact analysis
 - Gesture analysis
-- ATS Resume Evaluation
-- Multiplayer mock interviews
 - Cloud deployment
-- Recruiter Dashboard
 
 ---
 
