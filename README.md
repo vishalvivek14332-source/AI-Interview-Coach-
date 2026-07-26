@@ -41,7 +41,7 @@ The interviewer is powered by **Unreal Engine 5.8 MetaHuman** and streamed throu
 
 - Unreal Engine 5.8 MetaHuman interviewer
 - Streampixel cloud streaming
-- Pixel Streaming 2 integration
+- Pixel Streaming integration
 - Real-time browser streaming
 - High-quality 3D interviewer
 
@@ -275,7 +275,7 @@ The MetaHuman is streamed directly into the interview interface using Streampixe
 
 - Unreal Engine 5.8
 - MetaHuman
-- Pixel Streaming 2
+- Pixel Streaming
 - Streampixel
 
 ### Visualization
