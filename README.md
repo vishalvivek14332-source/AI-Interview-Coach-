@@ -223,7 +223,7 @@ The project integrates Unreal Engine MetaHuman using **Pixel Streaming**.
 
 - Unreal Engine 5.8
 - MetaHuman
-- Pixel Streaming 2
+- Pixel Streaming
 - Streampixel Cloud Streaming
 
 The MetaHuman is streamed directly into the interview interface using Streampixel.
