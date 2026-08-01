@@ -21,7 +21,7 @@ AI Interview Coach is an intelligent mock interview platform that combines moder
 
 The platform enables candidates to practice interviews with an AI interviewer while receiving instant evaluation, detailed feedback, and performance analytics.
 
-The interviewer is powered by **Unreal Engine 5.8 MetaHuman** and streamed through **Streampixel Pixel Streaming**, while the interview logic is handled by a **Python Flask backend**.
+The interviewer is powered by **Unreal Engine 5.8 MetaHuman** and streamed through **Epic Pixel Streaming**, while the interview logic is handled by a **Python Flask backend**.
 
 ---
 
