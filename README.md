@@ -338,7 +338,6 @@ pip install -r requirements.txt
 # 🚀 Roadmap
 
 - Runtime MetaHuman speech generation
-- AI-powered facial lip sync
 - Company-specific interview templates
 - AI emotion recognition
 - Eye contact analysis
