@@ -39,7 +39,7 @@ The interviewer is powered by **Unreal Engine 5.8 MetaHuman** and streamed throu
 
 ## 🎭 Unreal Engine MetaHuman
 
-- Unreal Engine 5.8
+- Unreal Engine 
 - Streampixel cloud streaming
 - Pixel Streaming integration
 - Real-time browser streaming
