@@ -307,7 +307,7 @@ The MetaHuman is streamed directly into the interview interface using Streampixe
 | Certificates | ✅ |
 | Interview History | ✅ |
 | Unreal MetaHuman | ✅ |
-| Pixel Streaming | 🚧 |
+| Pixel Streaming | ✅ |
 | Streampixel Integration | ✅ |
 | Body Language Analysis | ✅ |
 | Emotion Recognition | 🚧 |
